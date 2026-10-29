@@ -62,7 +62,7 @@ replaced, repeated spaces collapsed, each value capped at 200 characters and nev
 WhatsApp template parameter rules.
 
 If you change the parameter order or count, update `templateParameters()` in
-`apps/worker/src/notifications/whatsapp.ts`.
+`backend/src/worker/notifications/whatsapp.ts`.
 
 ## 3. Configure the monitoring server
 

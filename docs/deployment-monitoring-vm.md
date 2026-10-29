@@ -37,13 +37,15 @@ only. Note that Docker-published ports bypass ufw – this stack publishes nothi
 
 ```bash
 sudo mkdir -p /opt/system-monitor && sudo chown "$USER" /opt/system-monitor
-git clone <your-repo> /opt/system-monitor && cd /opt/system-monitor
+git clone <your-repo> /opt/system-monitor && cd /opt/system-monitor/backend
 cp .env.example .env && chmod 600 .env
 sed -i "s/CHANGE_ME_owner_password_hex/$(openssl rand -hex 32)/; s/CHANGE_ME_app_password_hex/$(openssl rand -hex 32)/; s/CHANGE_ME_random_string/$(openssl rand -hex 24)/" .env
 $EDITOR .env    # PUBLIC_ORIGIN, WhatsApp settings, ALERT_TIMEZONE, DEADMAN_PING_URL
 ```
 
 ## 4. Build, migrate, start
+
+All `docker compose` commands in this guide run in `/opt/system-monitor/backend`.
 
 ```bash
 docker compose build
@@ -88,7 +90,7 @@ sudo sed "s/monitor\.example\.com/$DOMAIN/g" deploy/nginx/system-monitor.conf \
   | sudo tee /etc/nginx/sites-available/system-monitor.conf >/dev/null
 
 # 2. Dashboard static files (built inside Docker; no Bun or Node needed on the host)
-sudo docker build --target dashboard --output type=local,dest=/var/www/system-monitor .
+sudo docker build --output type=local,dest=/var/www/system-monitor ../frontend
 
 # 3. Certificate (skip if you already have one for $DOMAIN; then fix the ssl_certificate paths)
 sudo certbot certonly --nginx -d "$DOMAIN" --deploy-hook "systemctl reload nginx"

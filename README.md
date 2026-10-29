@@ -16,18 +16,23 @@ VM, its application or its database goes down.
                                           └───────────────────────────────────────────────┘
 ```
 
-| Component | Path                                 | Responsibility                                                                                                                                                                                                                                                                                                  |
-| --------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Agent     | `apps/agent`                         | CPU (`/proc/stat` deltas), RAM (`MemAvailable`), disk + inodes per mount, load, uptime, PostgreSQL (authenticated `SELECT 1`, latency, DB size, WAL size, connection utilization, archiver, replication lag), HTTP health checks, optional Docker and backup freshness. Push-only; compiles to a single binary. |
-| API       | `apps/api`                           | Hono API: agent ingestion, dashboard/auth endpoints, WhatsApp delivery webhook, OpenAPI at `/api/v1/openapi.json`.                                                                                                                                                                                              |
-| Worker    | `apps/worker`                        | Separate process: sustained-window rule evaluation, incident lifecycle, durable notification queue with retries, reminders, escalation, recovery, retention.                                                                                                                                                    |
-| Dashboard | `apps/dashboard`                     | React + TypeScript SPA served as static files by the host's Nginx.                                                                                                                                                                                                                                              |
-| Database  | `packages/database`                  | Drizzle schema, SQL migrations, default rules.                                                                                                                                                                                                                                                                  |
-| Shared    | `packages/shared`, `packages/config` | Metric catalog, Zod payload/rule schemas, API types, JSON logger, type-safe env config.                                                                                                                                                                                                                         |
+The repository holds three independent projects. Each has its own `package.json`, lockfile,
+`tsconfig.json`, lint config and Dockerfile; there are no workspaces or shared packages.
+
+| Project     | Contents                                                                                                                                                                                                                                                                                      |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `backend/`  | `src/api` – Hono API: agent ingestion, dashboard/auth endpoints, WhatsApp delivery webhook, OpenAPI at `/api/v1/openapi.json`. `src/worker` – sustained-window rule evaluation, incident lifecycle, durable notification queue with retries, reminders, escalation, recovery, retention. `src/db` + `migrations/` – Drizzle schema, SQL migrations, default rules. `src/shared`, `src/config` – metric catalog, Zod schemas, API types, logger, env config. Also `docker-compose.yml`, `scripts/` and the monitoring-VM deploy files. |
+| `agent/`    | CPU (`/proc/stat` deltas), RAM (`MemAvailable`), disk + inodes per mount, load, uptime, PostgreSQL (authenticated `SELECT 1`, latency, DB size, WAL size, connection utilization, archiver, replication lag), HTTP health checks, optional Docker and backup freshness. Push-only; compiles to a single binary. `deploy/` has the systemd unit and installer. |
+| `frontend/` | React + TypeScript dashboard, built to static files served by the host's Nginx.                                                                                                                                                                                                              |
+
+The metric catalog and payload schemas exist in both `backend/src/shared` and `agent/src/shared`, and the
+API types in `backend/src/shared` and `frontend/src/shared`. When you change one copy, update the others.
 
 ## Quick start (local development)
 
 Requirements: Bun 1.3.14+, Docker.
+
+**Backend** (`cd backend`):
 
 ```bash
 bun install
@@ -44,13 +49,20 @@ printf '%s' 'a-long-dev-password' | DATABASE_URL=... bun run user:create --email
 DATABASE_URL=... bun run host:register --name dev-host     # prints an agent token once
 bun run dev:api                 # http://127.0.0.1:3000
 bun run dev:worker
-bun run dev:dashboard           # http://127.0.0.1:5173 (proxies /api to :3000)
 ```
 
-The agent reads Linux `/proc`, so run it on Linux (or in a Linux container):
+**Frontend** (`cd frontend`):
 
 ```bash
-MONITOR_URL=http://127.0.0.1:3000 AGENT_ALLOW_INSECURE_HTTP=true AGENT_TOKEN=ima_... bun run dev:agent
+bun install
+bun run dev                     # http://127.0.0.1:5173 (proxies /api to :3000)
+```
+
+**Agent** (`cd agent`). It reads Linux `/proc`, so run it on Linux (or in a Linux container):
+
+```bash
+bun install
+MONITOR_URL=http://127.0.0.1:3000 AGENT_ALLOW_INSECURE_HTTP=true AGENT_TOKEN=ima_... bun run dev
 ```
 
 ## Production
@@ -64,19 +76,25 @@ More: [configuration reference](docs/configuration.md) · [architecture & design
 
 ## Commands
 
-| Command                 | What it does                                                                        |
-| ----------------------- | ----------------------------------------------------------------------------------- |
-| `bun run typecheck`     | `tsc --noEmit` (strict) for backend, agent, tests and dashboard                     |
-| `bun run lint`          | Biome lint + format check                                                           |
-| `bun run test`          | Unit tests; integration tests run when `TEST_DATABASE_URL` is set                   |
-| `bun run build`         | Dashboard bundle + agent binaries (`dist/system-monitor-agent-linux-{x64,arm64}`)   |
-| `bun run db:generate`   | Generate a new SQL migration after changing `packages/database/src/schema.ts`       |
-| `bun run db:migrate`    | Apply migrations (as the schema owner) and seed default rules                       |
-| `bun run user:create`   | Create/reset a dashboard user (password from stdin)                                 |
-| `bun run host:register` | Register a host and print its agent token once                                      |
-| `bun run simulate`      | Send synthetic metrics for a **test** host (high CPU, low disk, PostgreSQL down, …) |
+Run these inside the project folder.
 
-Integration tests need a disposable database whose name contains `test`:
+| Project    | Command                 | What it does                                                                        |
+| ---------- | ----------------------- | ----------------------------------------------------------------------------------- |
+| all        | `bun run check`         | Typecheck, lint and test                                                            |
+| all        | `bun run typecheck`     | `tsc --noEmit` (strict)                                                             |
+| all        | `bun run lint`          | Biome lint + format check                                                           |
+| backend    | `bun run test`          | Unit tests; integration tests run when `TEST_DATABASE_URL` is set                   |
+| backend    | `bun run db:generate`   | Generate a new SQL migration after changing `src/db/schema.ts`                      |
+| backend    | `bun run db:migrate`    | Apply migrations (as the schema owner) and seed default rules                       |
+| backend    | `bun run user:create`   | Create/reset a dashboard user (password from stdin)                                 |
+| backend    | `bun run host:register` | Register a host and print its agent token once                                      |
+| backend    | `bun run simulate`      | Send synthetic metrics for a **test** host (high CPU, low disk, PostgreSQL down, …) |
+| agent      | `bun run test`          | Collector, check, buffering and config tests                                        |
+| agent      | `bun run build`         | Agent binaries (`dist/system-monitor-agent-linux-{x64,arm64}`)                      |
+| frontend   | `bun run dev`           | Dev server with API proxy                                                           |
+| frontend   | `bun run build`         | Static bundle in `dist/`                                                            |
+
+Integration tests (backend) need a disposable database whose name contains `test`:
 
 ```bash
 docker run -d --name im-testdb -e POSTGRES_USER=monitor_owner -e POSTGRES_PASSWORD=testpass \

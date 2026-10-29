@@ -14,13 +14,17 @@ It cannot delete WAL, change PostgreSQL configuration, restart services or remed
 
 ## 1. Build the binary (on any machine with Docker or Bun)
 
+Run the commands in this guide from the repository's `agent/` folder unless noted otherwise.
+
 ```bash
-docker build --target agent-binaries --output type=local,dest=dist .
-# or: bun run build:agent
+docker build --output type=local,dest=dist .
+# or: bun install && bun run build
 ls dist/   # system-monitor-agent-linux-x64, system-monitor-agent-linux-arm64
 ```
 
 ## 2. Register the host (monitoring VM or dashboard)
+
+On the monitoring VM, in `/opt/system-monitor/backend`:
 
 ```bash
 docker compose run --rm api bun scripts/register-host.ts --name db-prod-1 --environment production
@@ -33,7 +37,7 @@ Copy the printed `ima_…` token; it is not stored in plaintext anywhere and can
 ## 3. Read-only PostgreSQL role (production database server)
 
 ```bash
-sudo -u postgres psql -d appdb -f deploy/agent/postgres-monitoring-role.sql
+sudo -u postgres psql -d appdb -f deploy/postgres-monitoring-role.sql
 # pg_hba.conf:  host  appdb  system_monitor  127.0.0.1/32  scram-sha-256
 sudo systemctl reload postgresql
 ```
@@ -44,7 +48,7 @@ visibility. Without it those metrics are reported as _unavailable_, not as zero.
 ## 4. Install
 
 ```bash
-scp dist/system-monitor-agent-linux-x64 deploy/agent/* prod-vm:/tmp/system-monitor-agent/
+scp dist/system-monitor-agent-linux-x64 deploy/* prod-vm:/tmp/system-monitor-agent/
 ssh prod-vm
 cd /tmp/system-monitor-agent && sudo ./install.sh ./system-monitor-agent-linux-x64
 sudoedit /etc/system-monitor-agent/agent.env       # MONITOR_URL, AGENT_MOUNTS, AGENT_PG_URL, AGENT_HTTP_CHECKS

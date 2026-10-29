@@ -1,8 +1,8 @@
 # Configuration reference
 
 All configuration is via environment variables, parsed and validated at start-up
-(`packages/config/src/index.ts`). Invalid configuration exits with code 78 and names the variable,
-never its value.
+(`backend/src/config/index.ts` for the API and worker, `agent/src/config.ts` for the agent). Invalid
+configuration exits with code 78 and names the variable, never its value.
 
 ## Monitoring VM (`.env`, used by docker compose)
 

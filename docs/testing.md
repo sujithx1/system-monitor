@@ -2,10 +2,15 @@
 
 ## Automated tests
 
+Each project has its own tests; run them from its folder.
+
 ```bash
-bun test                         # unit tests (no external services)
-TEST_DATABASE_URL=postgres://monitor_owner:testpass@127.0.0.1:55439/system_monitor_test bun test
+cd agent && bun test             # collectors, PostgreSQL/HTTP checks, buffering, agent config
+cd backend && bun test           # unit tests (no external services)
+cd backend && TEST_DATABASE_URL=postgres://monitor_owner:testpass@127.0.0.1:55439/system_monitor_test bun test
 ```
+
+The frontend has no tests; `cd frontend && bun run check` typechecks and lints it.
 
 Integration tests run only when `TEST_DATABASE_URL` is set, migrate that database automatically
 and truncate all tables between tests. The URL's database name must contain `test` (a guard against
@@ -32,6 +37,7 @@ Never induce failures on production to test alerting. Use a dedicated **test hos
 the monitoring system and synthetic data:
 
 ```bash
+cd backend
 docker compose run --rm api bun scripts/register-host.ts --name sim-test-1 --environment test
 export MONITOR_URL=https://monitor.example.com AGENT_TOKEN=ima_...   # sim-test-1's token
 

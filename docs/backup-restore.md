@@ -6,14 +6,14 @@ data. Agents keep working after a restore as long as their `agents` rows are res
 
 ## Backups
 
-`deploy/scripts/backup.sh` runs `pg_dump --format=custom` inside the `db` container, verifies the
+`backend/deploy/scripts/backup.sh` runs `pg_dump --format=custom` inside the `db` container, verifies the
 archive with `pg_restore --list`, writes it with mode 0600 and prunes old files.
 
 ```bash
 cd /opt/system-monitor
-sudo ./deploy/scripts/backup.sh /var/backups/system-monitor 14
+sudo ./backend/deploy/scripts/backup.sh /var/backups/system-monitor 14
 # daily at 02:15 UTC
-echo '15 2 * * * root cd /opt/system-monitor && ./deploy/scripts/backup.sh /var/backups/system-monitor 14 >> /var/log/system-monitor-backup.log 2>&1' \
+echo '15 2 * * * root cd /opt/system-monitor && ./backend/deploy/scripts/backup.sh /var/backups/system-monitor 14 >> /var/log/system-monitor-backup.log 2>&1' \
   | sudo tee /etc/cron.d/system-monitor-backup
 ```
 
@@ -28,7 +28,7 @@ and add `&& touch /var/backups/system-monitor/.ok` to the cron line.
 
 ```bash
 cd /opt/system-monitor
-./deploy/scripts/restore.sh /var/backups/system-monitor/system_monitor-20261028T021500Z.dump
+./backend/deploy/scripts/restore.sh /var/backups/system-monitor/system_monitor-20261028T021500Z.dump
 ```
 
 The script asks for confirmation, stops `api` and `worker`, restores in a single transaction with
