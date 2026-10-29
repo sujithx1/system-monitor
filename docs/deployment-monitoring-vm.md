@@ -25,13 +25,13 @@ sudo apt update && sudo apt -y install docker-ce docker-ce-cli containerd.io doc
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow OpenSSH            # better: sudo ufw allow from <admin-ip> to any port 22
-sudo ufw allow 'Nginx Full'       # 80 (certbot + redirect) and 443; already open if Nginx serves other sites
+sudo ufw allow 80,443/tcp         # HTTP redirect/ACME and HTTPS for the reverse proxy
 sudo ufw enable
 ```
 
 PostgreSQL is never published (internal Docker network) and the API is published on `127.0.0.1`
 only. Note that Docker-published ports bypass ufw – this stack publishes nothing except
-`127.0.0.1:3000`; ports 80/443 belong to the host's Nginx.
+`127.0.0.1:3000`; ports 80/443 belong to the host's reverse proxy.
 
 ## 3. Configure
 
@@ -53,7 +53,7 @@ docker compose up -d db
 docker compose run --rm migrate                 # controlled step; safe to re-run
 docker compose up -d api worker
 docker compose ps                               # all services "healthy"
-curl -fsS http://127.0.0.1:3000/ready           # then set up Nginx (section 6)
+curl -fsS http://127.0.0.1:3000/ready           # then set up the reverse proxy (section 6)
 ```
 
 Upgrades: `git pull && docker compose build && docker compose run --rm migrate && docker compose up -d`,
@@ -76,37 +76,39 @@ docker compose run --rm api bun scripts/register-host.ts --name db-prod-1 --disp
 Roles: `viewer` (read-only), `operator` (+ acknowledge incidents), `admin` (+ rules, hosts, agent
 tokens, test messages).
 
-## 6. HTTPS through the existing Nginx
+## 6. HTTPS reverse proxy
 
-The stack ships no web server of its own: the Nginx already on this VM terminates HTTPS, serves the
-dashboard files and proxies `/api/*`, `/health` and `/ready` to the API on `127.0.0.1:3000`. The site
-config only matches its own `server_name`, so other sites on the same Nginx are unaffected.
+The stack ships no web server of its own. Put the reverse proxy you already run on this VM (Nginx,
+Caddy, Traefik, …) in front of it. Whatever you use must:
+
+- **Terminate HTTPS** for your domain and redirect plain HTTP to HTTPS. Agents refuse `http://`.
+- **Proxy `/api/*`, `/health` and `/ready`** to the API on `127.0.0.1:3000` (`API_PUBLISH_PORT`).
+- **Set `X-Forwarded-For` to the client address, replacing any incoming value** (do not append), and
+  set `X-Forwarded-Proto`. With `TRUST_PROXY=true` the API takes the client IP from the right-most
+  entry for rate limits and audit logs, so an appended, client-supplied header would let callers
+  spoof their IP.
+- **Serve the dashboard files** and fall back to `index.html` for unknown paths (client-side routing).
+- **Send security headers on dashboard responses**: `Strict-Transport-Security`,
+  `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer` and a
+  `Content-Security-Policy` allowing only `'self'` (plus `data:` images). The API already sets its own
+  headers on `/api/*`.
+- Limit request bodies to about 1 MB. Caching hashed `*.js`/`*.css` assets as immutable and
+  `index.html` as `no-cache` is recommended.
+
+Build the dashboard files (inside Docker; no Bun or Node needed on the host) into the folder your
+proxy serves:
 
 ```bash
-DOMAIN=monitor.example.com
-
-# 1. Site config with your domain
-sudo sed "s/monitor\.example\.com/$DOMAIN/g" deploy/nginx/system-monitor.conf \
-  | sudo tee /etc/nginx/sites-available/system-monitor.conf >/dev/null
-
-# 2. Dashboard static files (built inside Docker; no Bun or Node needed on the host)
 sudo docker build --output type=local,dest=/var/www/system-monitor ../frontend
-
-# 3. Certificate (skip if you already have one for $DOMAIN; then fix the ssl_certificate paths)
-sudo certbot certonly --nginx -d "$DOMAIN" --deploy-hook "systemctl reload nginx"
-
-# 4. Enable
-sudo ln -s ../sites-available/system-monitor.conf /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-curl -fsS "https://$DOMAIN/ready"
+curl -fsS "https://monitor.example.com/ready"     # once the proxy is configured
 ```
 
-In `.env` set `TRUST_PROXY=true` and `PUBLIC_ORIGIN=https://$DOMAIN`, then
-`docker compose up -d api`. If port 3000 is taken on this VM, set `API_PUBLISH_PORT` and change
-`proxy_pass` to match.
+In `.env` set `TRUST_PROXY=true` and `PUBLIC_ORIGIN=https://<your domain>`, then
+`docker compose up -d api`. If port 3000 is taken on this VM, set `API_PUBLISH_PORT` and point the
+proxy at that port.
 
-**Private network / internal CA:** point `ssl_certificate` at a certificate from your internal CA and
-set `AGENT_CA_FILE` on the agents. Never disable TLS verification.
+**Private network / internal CA:** use a certificate from your internal CA on the proxy and set
+`AGENT_CA_FILE` on the agents. Never disable TLS verification.
 
 ## 7. Monitoring the monitor
 

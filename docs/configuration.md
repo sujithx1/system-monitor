@@ -15,7 +15,7 @@ configuration exits with code 78 and names the variable, never its value.
 | `LOG_LEVEL`                                             | `info`                                 | all                  | `debug`, `info`, `warn`, `error`. JSON logs on stdout.                                       |
 | `API_HOST` / `API_PORT`                                 | `127.0.0.1` / `3000`                   | api                  | Compose sets `0.0.0.0` inside the container and publishes on `127.0.0.1` only.               |
 | `PUBLIC_ORIGIN`                                         | –                                      | api                  | `https://monitor.example.com`; enables the Origin check on state-changing requests.          |
-| `TRUST_PROXY`                                           | `false`                                | api                  | `true` behind Nginx (client IP from the right-most `X-Forwarded-For`).                       |
+| `TRUST_PROXY`                                           | `false`                                | api                  | `true` behind a reverse proxy (client IP from the right-most `X-Forwarded-For`).             |
 | `COOKIE_SECURE`                                         | `true`                                 | api                  | `false` only for plain-HTTP local development.                                               |
 | `SESSION_TTL_HOURS`                                     | `12`                                   | api                  | Absolute session lifetime.                                                                   |
 | `MAX_BODY_BYTES`                                        | `262144`                               | api                  | Request body limit.                                                                          |
@@ -41,7 +41,7 @@ configuration exits with code 78 and names the variable, never its value.
 | `WHATSAPP_MAX_ATTEMPTS`                                 | `10`                                   | worker               | Attempts before a notification is marked failed (~50 min with backoff).                      |
 | `WHATSAPP_WEBHOOK_VERIFY_TOKEN`                         | –                                      | api                  | Verify token entered in the Meta webhook configuration.                                      |
 | `WHATSAPP_APP_SECRET`                                   | –                                      | api                  | Meta app secret; webhook POSTs without a valid `X-Hub-Signature-256` are rejected.           |
-| `API_PUBLISH_PORT`                                      | `3000`                                 | compose              | Host port the API is published on, on `127.0.0.1` only. Must match `proxy_pass` in Nginx.    |
+| `API_PUBLISH_PORT`                                      | `3000`                                 | compose              | Host port the API is published on, on `127.0.0.1` only. The reverse proxy must target it.    |
 
 ## Agent (`/etc/system-monitor-agent/agent.env`)
 

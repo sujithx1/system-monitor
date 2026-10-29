@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-# Static dashboard export for the host's Nginx:
+# Static dashboard export for the host's reverse proxy:
 #   docker build --output type=local,dest=/var/www/system-monitor frontend
 ARG BUN_VERSION=1.3.14
 

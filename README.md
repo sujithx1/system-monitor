@@ -7,7 +7,7 @@ VM, its application or its database goes down.
 ```
  Production VM(s)                         Monitoring VM (docker compose)
  ┌──────────────────────────┐   HTTPS    ┌───────────────────────────────────────────────┐
- │ system-monitor-agent (systemd)    │──push────▶ │ Nginx :443 (host) ─▶ api (Hono, 127.0.0.1:3000)│
+ │ system-monitor-agent (systemd)    │──push────▶ │ Proxy :443 (host) ─▶ api (Hono, 127.0.0.1:3000)│
  │  /proc, statfs, SQL,     │  every 30s │                         │                      │
  │  HTTP checks             │            │ worker ─ rule evaluation every 15 s            │
  │  (no listening ports)    │            │        ─ notification outbox ─────────────────┼──▶ WhatsApp Cloud API
@@ -23,7 +23,7 @@ The repository holds three independent projects. Each has its own `package.json`
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `backend/`  | `src/api` – Hono API: agent ingestion, dashboard/auth endpoints, WhatsApp delivery webhook, OpenAPI at `/api/v1/openapi.json`. `src/worker` – sustained-window rule evaluation, incident lifecycle, durable notification queue with retries, reminders, escalation, recovery, retention. `src/db` + `migrations/` – Drizzle schema, SQL migrations, default rules. `src/shared`, `src/config` – metric catalog, Zod schemas, API types, logger, env config. Also `docker-compose.yml`, `scripts/` and the monitoring-VM deploy files. |
 | `agent/`    | CPU (`/proc/stat` deltas), RAM (`MemAvailable`), disk + inodes per mount, load, uptime, PostgreSQL (authenticated `SELECT 1`, latency, DB size, WAL size, connection utilization, archiver, replication lag), HTTP health checks, optional Docker and backup freshness. Push-only; compiles to a single binary. `deploy/` has the systemd unit and installer. |
-| `frontend/` | React + TypeScript dashboard, built to static files served by the host's Nginx.                                                                                                                                                                                                              |
+| `frontend/` | React + TypeScript dashboard, built to static files served by the host's reverse proxy.                                                                                                                                                                                                              |
 
 The metric catalog and payload schemas exist in both `backend/src/shared` and `agent/src/shared`, and the
 API types in `backend/src/shared` and `frontend/src/shared`. When you change one copy, update the others.
@@ -67,7 +67,7 @@ MONITOR_URL=http://127.0.0.1:3000 AGENT_ALLOW_INSECURE_HTTP=true AGENT_TOKEN=ima
 
 ## Production
 
-1. **Monitoring VM** – [docs/deployment-monitoring-vm.md](docs/deployment-monitoring-vm.md): Docker, firewall, `.env`, migrations, first admin, HTTPS through the server's existing Nginx.
+1. **Monitoring VM** – [docs/deployment-monitoring-vm.md](docs/deployment-monitoring-vm.md): Docker, firewall, `.env`, migrations, first admin, HTTPS through your reverse proxy.
 2. **Production VMs** – [docs/agent-installation.md](docs/agent-installation.md): read-only PostgreSQL role, agent binary, hardened systemd unit.
 3. **WhatsApp** – [docs/whatsapp-setup.md](docs/whatsapp-setup.md): template specification, credentials, webhook.
 4. **Watching the watcher** – the monitoring VM cannot reliably report its own total outage. Configure `DEADMAN_PING_URL` and an external uptime check (see the deployment guide).
