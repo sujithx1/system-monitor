@@ -1,0 +1,13 @@
+{
+  "name": "@system-monitor/api",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@system-monitor/config": "workspace:*",
+    "@system-monitor/database": "workspace:*",
+    "@system-monitor/shared": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "hono": "4.13.14",
+    "zod": "4.6.7"
+  }
+}

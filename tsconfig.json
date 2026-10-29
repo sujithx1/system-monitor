@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "apps/api/src",
+    "apps/worker/src",
+    "apps/agent/src",
+    "packages/*/src",
+    "packages/database/drizzle.config.ts",
+    "scripts",
+    "tests"
+  ]
+}

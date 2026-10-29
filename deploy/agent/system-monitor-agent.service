@@ -1,0 +1,51 @@
+[Unit]
+Description=System Monitor agent (push-only metrics)
+Documentation=file:///etc/system-monitor-agent/README
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=system-monitor-agent
+Group=system-monitor-agent
+EnvironmentFile=/etc/system-monitor-agent/agent.env
+# The token is handed over by systemd and readable only by this service.
+LoadCredential=agent-token:/etc/system-monitor-agent/agent.token
+Environment=AGENT_TOKEN_FILE=%d/agent-token
+ExecStart=/usr/local/bin/system-monitor-agent
+Restart=always
+RestartSec=5
+# Exit code 78 = invalid configuration: do not hot-loop.
+RestartPreventExitStatus=78
+
+# --- Hardening: the agent only reads /proc, statfs()s mounts and makes outbound connections.
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RemoveIPC=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+UMask=0077
+# Bun's JIT needs writable+executable memory, so MemoryDenyWriteExecute stays off.
+MemoryMax=256M
+CPUQuota=25%
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

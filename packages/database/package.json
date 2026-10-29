@@ -1,0 +1,14 @@
+{
+  "name": "@system-monitor/database",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@system-monitor/config": "workspace:*",
+    "@system-monitor/shared": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "postgres": "3.4.9"
+  }
+}

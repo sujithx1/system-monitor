@@ -1,0 +1,118 @@
+# Monitoring VM stack. Usage:
+#   docker compose build
+#   docker compose run --rm migrate          # controlled migration step
+#   docker compose up -d                      # api + worker + db
+# The host's Nginx terminates HTTPS and proxies to 127.0.0.1:3000 (deploy/nginx/system-monitor.conf).
+name: system-monitor
+
+x-app: &app
+  image: system-monitor-app:${APP_VERSION:-latest}
+  build:
+    context: .
+    target: app
+  env_file: .env
+  restart: unless-stopped
+  read_only: true
+  tmpfs:
+    - /tmp:size=16m
+  security_opt:
+    - no-new-privileges:true
+  cap_drop: [ALL]
+  depends_on:
+    db:
+      condition: service_healthy
+  logging:
+    driver: json-file
+    options: { max-size: "20m", max-file: "5" }
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-monitor_owner}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-system_monitor}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    shm_size: 256m
+    networks: [backend] # internal only – never published
+    deploy:
+      resources:
+        limits: { memory: 1g }
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+  migrate:
+    <<: *app
+    profiles: [tools]
+    restart: "no"
+    command: ["bun", "packages/database/src/migrate.ts"]
+    environment:
+      DATABASE_URL_MIGRATE: postgres://${POSTGRES_USER:-monitor_owner}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-system_monitor}
+      APP_DB_ROLE: monitor_app
+    networks: [backend]
+
+  api:
+    <<: *app
+    command: ["bun", "apps/api/src/index.ts"]
+    environment:
+      DATABASE_URL: postgres://monitor_app:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB:-system_monitor}
+      API_HOST: 0.0.0.0
+      API_PORT: "3000"
+    ports:
+      # Bound to loopback: only the host's Nginx reaches it.
+      - "127.0.0.1:${API_PUBLISH_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "fetch('http://127.0.0.1:3000/ready').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    stop_grace_period: 20s
+    networks: [backend, edge]
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 512m }
+
+  worker:
+    <<: *app
+    command: ["bun", "apps/worker/src/index.ts"]
+    environment:
+      DATABASE_URL: postgres://monitor_app:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB:-system_monitor}
+      WORKER_HEALTH_FILE: /tmp/worker.health
+    healthcheck:
+      test: ["CMD", "bun", "apps/worker/src/healthcheck.ts"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    stop_grace_period: 30s
+    networks: [backend, egress] # egress: WhatsApp Cloud API + dead man's switch
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 512m }
+
+volumes:
+  pgdata:
+
+networks:
+  backend:
+    internal: true
+  edge: {} # lets the API publish its port on the host's loopback
+  egress: {}
