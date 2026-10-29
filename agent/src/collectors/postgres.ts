@@ -1,6 +1,6 @@
-import type { PgTargetConfig } from "@system-monitor/config";
-import { type MetricSample, sample, unavailable } from "@system-monitor/shared";
 import { SQL } from "bun";
+import type { PgTargetConfig } from "../config";
+import { type MetricSample, sample, unavailable } from "../shared";
 import { round } from "./cpu";
 import { withTimeout } from "./timeout";
 

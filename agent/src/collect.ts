@@ -1,7 +1,5 @@
 import { readFile } from "node:fs/promises";
 import { hostname } from "node:os";
-import type { AgentConfig } from "@system-monitor/config";
-import { type Logger, type MetricSample, type MetricSnapshot, unavailable } from "@system-monitor/shared";
 import { collectBackupMarkers } from "./collectors/backup";
 import { CpuCollector } from "./collectors/cpu";
 import { collectDisks, parseProcMounts } from "./collectors/disk";
@@ -11,6 +9,8 @@ import { collectMemory } from "./collectors/memory";
 import { checkPostgres } from "./collectors/postgres";
 import { collectSystem } from "./collectors/system";
 import { withTimeout } from "./collectors/timeout";
+import type { AgentConfig } from "./config";
+import { type Logger, type MetricSample, type MetricSnapshot, unavailable } from "./shared";
 import { AGENT_VERSION } from "./version";
 
 export function safeHostname(): string {

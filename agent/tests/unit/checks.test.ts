@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { checkHttp } from "../../apps/agent/src/collectors/http";
-import { checkPostgres, type PgConnector } from "../../apps/agent/src/collectors/postgres";
+import { checkHttp } from "../../src/collectors/http";
+import { checkPostgres, type PgConnector } from "../../src/collectors/postgres";
 
 const target = { name: "main", url: "postgres://monitor:secret@db:5432/app" };
 

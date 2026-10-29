@@ -1,4 +1,4 @@
-import { type MetricSample, sample, unavailable } from "@system-monitor/shared";
+import { type MetricSample, sample, unavailable } from "../shared";
 
 /** Aggregate jiffies from the first `cpu` line of /proc/stat. */
 export interface CpuTimes {

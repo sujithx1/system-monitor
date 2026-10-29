@@ -1,4 +1,4 @@
-import type { Logger, MetricSnapshot } from "@system-monitor/shared";
+import type { Logger, MetricSnapshot } from "./shared";
 
 export interface SendResult {
   status: number;

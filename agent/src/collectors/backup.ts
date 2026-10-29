@@ -1,5 +1,5 @@
 import { stat } from "node:fs/promises";
-import { type MetricSample, sample, unavailable } from "@system-monitor/shared";
+import { type MetricSample, sample, unavailable } from "../shared";
 
 /**
  * Backup freshness via a marker file that the backup job touches only after a verified,

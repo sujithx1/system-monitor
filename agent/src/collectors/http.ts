@@ -1,5 +1,5 @@
-import type { HttpCheckConfig } from "@system-monitor/config";
-import { describeError, type MetricSample, sample, unavailable } from "@system-monitor/shared";
+import type { HttpCheckConfig } from "../config";
+import { describeError, type MetricSample, sample, unavailable } from "../shared";
 import { round } from "./cpu";
 
 export function isExpectedStatus(status: number, expected?: number[]): boolean {

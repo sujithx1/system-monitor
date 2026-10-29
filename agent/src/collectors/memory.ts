@@ -1,4 +1,4 @@
-import { type MetricSample, sample, unavailable } from "@system-monitor/shared";
+import { type MetricSample, sample, unavailable } from "../shared";
 import { round } from "./cpu";
 
 /** Parse /proc/meminfo into bytes (values there are in kB = KiB). */

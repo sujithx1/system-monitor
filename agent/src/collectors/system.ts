@@ -1,5 +1,5 @@
 import { availableParallelism } from "node:os";
-import { type MetricSample, sample, unavailable } from "@system-monitor/shared";
+import { type MetricSample, sample, unavailable } from "../shared";
 
 export function parseLoadavg(content: string): [number, number, number] {
   const [a, b, c] = content.trim().split(/\s+/).map(Number);

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { type MetricSnapshot, silentLogger } from "@system-monitor/shared";
-import { MonitorClient, SnapshotSender } from "../../apps/agent/src/sender";
+import { MonitorClient, SnapshotSender } from "../../src/sender";
+import { type MetricSnapshot, silentLogger } from "../../src/shared";
 
 const snap = (n: number): MetricSnapshot => ({
   snapshotId: crypto.randomUUID(),

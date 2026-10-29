@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { CpuCollector, computeCpuUsage, parseProcStat } from "../../apps/agent/src/collectors/cpu";
-import { collectDisks, computeDiskUsage, parseProcMounts } from "../../apps/agent/src/collectors/disk";
-import { parseContainers } from "../../apps/agent/src/collectors/docker";
-import { collectMemory, computeMemory, parseMeminfo } from "../../apps/agent/src/collectors/memory";
-import { parseLoadavg, parseUptime } from "../../apps/agent/src/collectors/system";
+import { CpuCollector, computeCpuUsage, parseProcStat } from "../../src/collectors/cpu";
+import { collectDisks, computeDiskUsage, parseProcMounts } from "../../src/collectors/disk";
+import { parseContainers } from "../../src/collectors/docker";
+import { collectMemory, computeMemory, parseMeminfo } from "../../src/collectors/memory";
+import { parseLoadavg, parseUptime } from "../../src/collectors/system";
 import { MEMINFO, MEMINFO_NO_AVAILABLE, PROC_MOUNTS, PROC_STAT_1, PROC_STAT_2 } from "../fixtures/proc";
 
 describe("CPU", () => {

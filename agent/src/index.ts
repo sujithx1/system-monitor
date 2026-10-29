@@ -6,10 +6,10 @@
  * and pushes results to the monitoring server over HTTPS.
  */
 import { readFileSync } from "node:fs";
-import { ConfigError, loadAgentConfig } from "@system-monitor/config";
-import { createLogger } from "@system-monitor/shared";
 import { SnapshotCollector, safeHostname } from "./collect";
+import { ConfigError, loadAgentConfig } from "./config";
 import { MonitorClient, SnapshotSender } from "./sender";
+import { createLogger } from "./shared";
 import { AGENT_VERSION } from "./version";
 
 let config: ReturnType<typeof loadAgentConfig>;

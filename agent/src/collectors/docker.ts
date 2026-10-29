@@ -1,4 +1,4 @@
-import { type MetricSample, sample, unavailable } from "@system-monitor/shared";
+import { type MetricSample, sample, unavailable } from "../shared";
 
 interface ContainerSummary {
   Names?: string[];

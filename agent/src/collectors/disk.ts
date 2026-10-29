@@ -1,5 +1,5 @@
 import { statfs } from "node:fs/promises";
-import { type MetricSample, sample, unavailable } from "@system-monitor/shared";
+import { type MetricSample, sample, unavailable } from "../shared";
 import { round } from "./cpu";
 
 export interface StatfsLike {
