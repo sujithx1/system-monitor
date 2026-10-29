@@ -1,14 +1,8 @@
-import type {
-  HostHealth,
-  IncidentStatus,
-  NotificationKind,
-  NotificationStatus,
-  Severity,
-} from "@system-monitor/shared";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { ApiError } from "../lib/api";
 import { formatDateTime, formatRelative } from "../lib/format";
 import { REFRESH_INTERVAL_MS, useRefresh } from "../lib/refresh";
+import type { HostHealth, IncidentStatus, NotificationKind, NotificationStatus, Severity } from "../shared";
 
 // ---- Status badges: every tone carries an icon and a text label, never color alone ---------
 

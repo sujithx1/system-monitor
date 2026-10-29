@@ -1,7 +1,7 @@
-import type { UserDto } from "@system-monitor/shared";
 import { type FormEvent, useState } from "react";
 import { ErrorBox } from "../components/ui";
 import { type ApiError, api, toApiError } from "../lib/api";
+import type { UserDto } from "../shared";
 
 export function LoginPage({ expired, onLogin }: { expired: boolean; onLogin: (user: UserDto) => void }) {
   const [email, setEmail] = useState("");

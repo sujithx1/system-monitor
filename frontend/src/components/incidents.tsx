@@ -1,10 +1,10 @@
-import { formatDuration, type IncidentDto } from "@system-monitor/shared";
 import { type FormEvent, useId, useState } from "react";
 import { type ApiError, api, toApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { secondsBetween } from "../lib/format";
 import { useRefresh } from "../lib/refresh";
 import { href } from "../lib/router";
+import { formatDuration, type IncidentDto } from "../shared";
 import { Empty, ErrorBox, IncidentStatusBadge, RelativeTime, SeverityBadge } from "./ui";
 
 /**

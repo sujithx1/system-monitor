@@ -1,9 +1,3 @@
-import {
-  formatDuration,
-  formatMetricValue,
-  type IncidentDetailDto,
-  type NotificationDto,
-} from "@system-monitor/shared";
 import { AckControl } from "../components/incidents";
 import {
   Empty,
@@ -24,6 +18,7 @@ import { formatDateTime, secondsBetween } from "../lib/format";
 import { useRefresh } from "../lib/refresh";
 import { useResource } from "../lib/resource";
 import { href } from "../lib/router";
+import { formatDuration, formatMetricValue, type IncidentDetailDto, type NotificationDto } from "../shared";
 
 function formatIncidentValue(incident: IncidentDetailDto, value: number | null): string {
   if (value === null) return "—";

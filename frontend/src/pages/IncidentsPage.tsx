@@ -1,9 +1,9 @@
-import type { IncidentStatus, Severity } from "@system-monitor/shared";
 import { IncidentTable } from "../components/incidents";
 import { ErrorBox, INCIDENT_STATUS_LABELS, Loading, PageHeader, StaleWarning } from "../components/ui";
 import { api } from "../lib/api";
 import { usePagedResource, useResource } from "../lib/resource";
 import { navigate, useLocation } from "../lib/router";
+import type { IncidentStatus, Severity } from "../shared";
 
 const STATUSES: IncidentStatus[] = ["pending", "firing", "acknowledged", "resolved"];
 const SEVERITIES: Severity[] = ["warning", "critical"];

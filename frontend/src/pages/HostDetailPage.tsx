@@ -1,12 +1,3 @@
-import {
-  type AgentDto,
-  formatMetricValue,
-  type HostDetailDto,
-  type LatestMetricDto,
-  METRICS,
-  type MetricName,
-  type MetricSeriesDto,
-} from "@system-monitor/shared";
 import { useEffect, useRef } from "react";
 import { IncidentTable } from "../components/incidents";
 import { type ChartSeries, LineChart } from "../components/LineChart";
@@ -27,6 +18,15 @@ import { formatDateTime } from "../lib/format";
 import { useRefresh } from "../lib/refresh";
 import { useResource } from "../lib/resource";
 import { href, navigate, useLocation } from "../lib/router";
+import {
+  type AgentDto,
+  formatMetricValue,
+  type HostDetailDto,
+  type LatestMetricDto,
+  METRICS,
+  type MetricName,
+  type MetricSeriesDto,
+} from "../shared";
 
 const RANGES = [
   { id: "1h", label: "1h", ms: 3600_000 },

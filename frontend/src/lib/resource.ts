@@ -1,5 +1,5 @@
-import type { Page } from "@system-monitor/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { Page } from "../shared";
 import { type ApiError, toApiError } from "./api";
 import { useRefresh } from "./refresh";
 

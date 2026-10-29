@@ -1,4 +1,3 @@
-import type { NotificationDto, NotificationKind, NotificationStatus } from "@system-monitor/shared";
 import {
   Empty,
   ErrorBox,
@@ -13,6 +12,7 @@ import {
 import { api } from "../lib/api";
 import { usePagedResource } from "../lib/resource";
 import { href, navigate, useLocation } from "../lib/router";
+import type { NotificationDto, NotificationKind, NotificationStatus } from "../shared";
 
 const STATUSES: NotificationStatus[] = [
   "queued",

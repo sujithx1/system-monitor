@@ -1,5 +1,5 @@
-import type { UserDto, UserRole } from "@system-monitor/shared";
 import { createContext, useContext } from "react";
+import type { UserDto, UserRole } from "../shared";
 
 const ROLE_RANK: Record<UserRole, number> = { viewer: 1, operator: 2, admin: 3 };
 

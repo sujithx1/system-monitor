@@ -1,4 +1,3 @@
-import type { HostSummaryDto, NotificationStatus, OverviewDto } from "@system-monitor/shared";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { IncidentTable } from "../components/incidents";
 import {
@@ -19,6 +18,7 @@ import { useAuth } from "../lib/auth";
 import { useRefresh } from "../lib/refresh";
 import { useResource } from "../lib/resource";
 import { href } from "../lib/router";
+import type { HostSummaryDto, NotificationStatus, OverviewDto } from "../shared";
 
 const BANNER: Record<OverviewDto["status"], { icon: string; title: string }> = {
   healthy: { icon: "✓", title: "All systems operational" },

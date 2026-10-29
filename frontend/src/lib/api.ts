@@ -16,7 +16,7 @@ import type {
   Page,
   Severity,
   UserDto,
-} from "@system-monitor/shared";
+} from "../shared";
 
 const BASE = "/api/v1";
 

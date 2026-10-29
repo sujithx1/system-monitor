@@ -1,10 +1,10 @@
-import { type AlertRuleDto, type Comparator, formatDuration, METRICS } from "@system-monitor/shared";
 import { type FormEvent, useEffect, useId, useState } from "react";
 import { Badge, Empty, ErrorBox, Loading, PageHeader, RefreshStatus, StaleWarning } from "../components/ui";
 import { type ApiError, api, type RulePatch, toApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useRefresh } from "../lib/refresh";
 import { useResource } from "../lib/resource";
+import { type AlertRuleDto, type Comparator, formatDuration, METRICS } from "../shared";
 
 const COMPARATOR_SYMBOL: Record<Comparator, string> = { gt: ">", gte: "≥", lt: "<", lte: "≤" };
 const MAX_SECONDS = 7 * 24 * 3600;

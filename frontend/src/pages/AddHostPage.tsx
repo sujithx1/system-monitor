@@ -1,9 +1,9 @@
-import type { CreatedHostDto } from "@system-monitor/shared";
 import { type FormEvent, useState } from "react";
 import { CopyButton, ErrorBox, PageHeader } from "../components/ui";
 import { type ApiError, api, toApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { href, navigate } from "../lib/router";
+import type { CreatedHostDto } from "../shared";
 
 const NAME_PATTERN = "[a-z0-9][a-z0-9._\\-]{0,62}";
 

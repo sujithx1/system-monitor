@@ -1,4 +1,3 @@
-import type { UserDto, UserRole } from "@system-monitor/shared";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Layout } from "./components/Layout";
@@ -16,6 +15,7 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { OverviewPage } from "./pages/OverviewPage";
 import { RulesPage } from "./pages/RulesPage";
+import type { UserDto, UserRole } from "./shared";
 
 type Session =
   | { state: "checking" }
